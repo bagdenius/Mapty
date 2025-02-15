@@ -26,7 +26,23 @@ if (navigator.geolocation)
           '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
       }).addTo(map);
 
-      L.marker(coords).addTo(map).bindPopup('MAP MARKER TEST').openPopup();
+      map.on(`click`, e => {
+        console.log(e);
+
+        L.marker(e.latlng)
+          .addTo(map)
+          .bindPopup(
+            L.popup({
+              maxWidth: 250,
+              minWidth: 100,
+              autoClose: false,
+              closeOnClick: false,
+              className: `running-popup`,
+            })
+          )
+          .setPopupContent(`popup test`)
+          .openPopup();
+      });
     },
     function () {
       alert(`Could not get your position`);
