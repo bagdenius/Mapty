@@ -44,7 +44,7 @@ a:visited {
 .sidebar {
   flex-basis: 50rem;
   background-color: var(--color-dark--1);
-  padding: 3rem 5rem 4rem 5rem;
+  padding: 3rem 5rem 2rem 5rem;
   display: flex;
   flex-direction: column;
 }
@@ -77,10 +77,10 @@ a:visited {
   grid-template-columns: 1fr 1fr 1fr 1fr;
   gap: 0.75rem 1.5rem;
 }
-.workout--running {
+.workout--run {
   border-left: 5px solid var(--color-brand--2);
 }
-.workout--cycling {
+.workout--cycleRide {
   border-left: 5px solid var(--color-brand--1);
 }
 
@@ -172,7 +172,7 @@ a:visited {
 }
 
 .copyright {
-  margin-top: auto;
+  margin-top: 1.5rem;
   font-size: 1.3rem;
   text-align: center;
   color: var(--color-light--1);
