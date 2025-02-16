@@ -71,6 +71,7 @@ class App {
 
   constructor() {
     this._getPosition();
+    this._getLocalStorage();
     form.addEventListener(`submit`, this._newWorkout.bind(this));
     inputType.addEventListener(`change`, this._toggleElevationField);
     containerWorkouts.addEventListener(`click`, this._moveToMarker.bind(this));
@@ -95,9 +96,10 @@ class App {
       attribution:
         '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     }).addTo(this.#map);
-
-    // Handling clicks on map
     this.#map.on(`click`, this._showForm.bind(this));
+    this.#workouts.forEach(w => {
+      this._renderWorkoutMarker(w);
+    });
   }
 
   _showForm(mapE) {
@@ -124,57 +126,43 @@ class App {
   }
 
   _newWorkout(e) {
+    e.preventDefault();
+
     const validInputs = (...inputs) =>
       inputs.every(inp => Number.isFinite(inp));
     const allPositive = (...inputs) => inputs.every(inp => inp > 0);
 
-    e.preventDefault();
-
-    // Get data from form
     const type = inputType.value;
     const distance = +inputDistance.value;
     const duration = +inputDuration.value;
     const { lat, lng } = this.#mapEvent.latlng;
     let workout;
 
-    // If workout running, create a run
     if (type === `run`) {
       const cadence = +inputCadence.value;
-      // Check if data is valid
       if (
         !validInputs(distance, duration, cadence) ||
         !allPositive(distance, duration, cadence)
       )
         return alert(`Inputs have to be positive numbers!`);
-
       workout = new Run([lat, lng], distance, duration, cadence);
     }
 
-    // If workout cycling, create a ride
     if (type === `cycleRide`) {
       const elevation = +inputElevation.value;
-      // Check if data is valid
       if (
         !validInputs(distance, duration, elevation) ||
         !allPositive(distance, duration)
       )
         return alert(`Inputs have to be positive numbers!`);
-
       workout = new CycleRide([lat, lng], distance, duration, elevation);
     }
 
-    // Add new object to workout array
     this.#workouts.push(workout);
-    console.log(this.#workouts);
-
-    // Render workout on map as a marker
     this._renderWorkoutMarker(workout);
-
-    // Render workout on list
     this._renderWorkout(workout);
-
-    // Hide form + clear input fiedls
     this._hideForm();
+    this._setLocalStorage();
   }
 
   _renderWorkoutMarker(workout) {
@@ -253,9 +241,37 @@ class App {
       },
     });
 
-    // using the public interface
-    workout.click();
+    // workout.click();
   }
+
+  _setLocalStorage() {
+    localStorage.setItem(`workouts`, JSON.stringify(this.#workouts));
+  }
+
+  _getLocalStorage() {
+    const data = JSON.parse(localStorage.getItem(`workouts`));
+    if (!data) return;
+    this.#workouts = data;
+    this.#workouts.forEach(w => {
+      this._renderWorkout(w);
+    });
+  }
+
+  reset() {
+    localStorage.removeItem(`workouts`);
+    location.reload();
+  }
+
+  // TODO: edit workout
+  // TODO: delete workout
+  // TODO: delete all workouts
+  // TODO: sort workouts by certain field
+  // TODO: rebuild objects coming from local storage
+  // TODO: add error and confirmation messages instead of alerts
+  // TODO: add ability to the map to show all workouts
+  // TODO: add ability to draw lines and shapes insted of just points
+  // TODO: geocode location from coordinates (`Run in City, Country`)
+  // TODO: display weather data for workout time and place
 }
 
 const app = new App();
