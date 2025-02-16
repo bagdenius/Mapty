@@ -11,6 +11,7 @@ const inputElevation = document.querySelector('.form__input--elevation');
 class Workout {
   id = (Date.now() + ``).slice(-10);
   date = new Date();
+  clicks = 0;
 
   constructor(coords, distance, duration) {
     this.coords = coords; // [lat, lng]
@@ -25,6 +26,10 @@ class Workout {
     this.description = `${this.type === `run` ? `Run` : `Ride`} on ${
       months[this.date.getMonth()]
     } ${this.date.getDate()}`;
+  }
+
+  click() {
+    this.clicks++;
   }
 }
 
@@ -58,20 +63,17 @@ class CycleRide extends Workout {
   }
 }
 
-// const run1 = new Run([39, -12], 5.2, 23, 178);
-// const ride1 = new CycleRide([39, -12], 27, 95, 523);
-// console.log(run1, ride1);
-
 class App {
   #map;
+  #mapZooomLevel = 14;
   #mapEvent;
   #workouts = [];
 
   constructor() {
     this._getPosition();
     form.addEventListener(`submit`, this._newWorkout.bind(this));
-
     inputType.addEventListener(`change`, this._toggleElevationField);
+    containerWorkouts.addEventListener(`click`, this._moveToMarker.bind(this));
   }
 
   _getPosition() {
@@ -88,7 +90,7 @@ class App {
   _loadMap(position) {
     const { latitude, longitude } = position.coords;
     const coords = [latitude, longitude];
-    this.#map = L.map('map').setView(coords, 14);
+    this.#map = L.map('map').setView(coords, this.#mapZooomLevel);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution:
         '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
@@ -238,6 +240,21 @@ class App {
         </li>`;
 
     form.insertAdjacentHTML(`afterend`, html);
+  }
+
+  _moveToMarker(e) {
+    const workoutEl = e.target.closest(`.workout`);
+    if (!workoutEl) return;
+    const workout = this.#workouts.find(w => w.id === workoutEl.dataset.id);
+    this.#map.setView(workout.coords, this.#mapZooomLevel, {
+      animate: true,
+      pan: {
+        duration: 1,
+      },
+    });
+
+    // using the public interface
+    workout.click();
   }
 }
 
